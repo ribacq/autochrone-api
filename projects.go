@@ -10,28 +10,28 @@ import (
 // Project is a project associated with a user
 type Project struct {
 	// ID the project identifier
-	ID int `db:"id"`
+	ID int `db:"id" json:"id"`
 
 	// UserID the ID of the project owner
-	UserID int `db:"user_id"`
+	UserID int `db:"user_id" json:"userID"`
 
 	// Name the project public name
-	Name string `db:"name"`
+	Name string `db:"name" json:"name"`
 
 	// Slug what goes in the url when refering to this project. Unique user-wide but not globally.
-	Slug string `db:"slug"`
+	Slug string `db:"slug" json:"slug"`
 
 	// DateStart the date at which the project was started
-	DateStart time.Time `db:"date_start"`
+	DateStart time.Time `db:"date_start" json:"dateStart"`
 
 	// DateEnd the date at which the project must end
-	DateEnd time.Time `db:"date_end"`
+	DateEnd time.Time `db:"date_end" json:"dateEnd"`
 
 	// WordCountStart the initial word count for this writing project
-	WordCountStart int `db:"word_count_start"`
+	WordCountStart int `db:"word_count_start" json:"wordCountStart"`
 
 	// WordCountGoal the goal word count for this writing project
-	WordCountGoal int `db:"word_count_goal"`
+	WordCountGoal int `db:"word_count_goal" json:"wordCountGoal"`
 
 	// TODO: put WordCountStart & WordCountGoal in a Details field
 	// TODO: add a Settings field with for instance which stats to display, privacy settings

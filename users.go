@@ -12,13 +12,13 @@ import (
 // User holds the ID, username and projects of a user, but NOT their credentials
 type User struct {
 	// ID the user unique identifier used to refer to them from other structs
-	ID int `db:"id"`
+	ID int `db:"id" json:"id"`
 
 	// Username the user connection string
-	Username string `db:"username"`
+	Username string `db:"username" json:"username"`
 
 	// Projects the user’s projects
-	Projects []*Project
+	Projects []*Project `json:"projects"`
 }
 
 // NewUser registers a new user in the database and returns it, alongide a potential error

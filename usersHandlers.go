@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,7 +16,9 @@ func UsersGET(c *gin.Context) {
 		c.JSON(http.StatusNotFound, nil)
 		return
 	}
-	c.JSON(http.StatusOK, users)
+
+	b, _ := json.Marshal(users)
+	c.Data(http.StatusOK, "application/json", b)
 }
 
 // UsersPOST registers new user
