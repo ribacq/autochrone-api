@@ -9,6 +9,10 @@ func main() {
 	// gin router
 	r := gin.Default()
 
+	// auth
+	rAuth := r.Group("/auth")
+	rAuth.POST("/", AuthPOST)
+
 	// users
 	rUsers := r.Group("/users")
 	rUsers.GET("/", UsersGET)

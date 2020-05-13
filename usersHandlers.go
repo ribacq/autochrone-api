@@ -5,8 +5,8 @@ import (
 
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
+	"strings"
 )
 
 // UsersGET sends users as JSON
@@ -63,14 +63,21 @@ func UsersUsernameGET(c *gin.Context) {
 // UsersUsernamePATCH updates a user
 // expects param(username), post(operator, path, value)
 func UsersUsernamePATCH(c *gin.Context) {
+	// fetch user from DB
 	user, err := GetUserByUsername(c.Param("username"))
 	if err != nil {
 		c.JSON(http.StatusNotFound, nil)
 		return
 	}
 
-	log.Print(c.PostForm("operator"))
+	// check token and scope
+	tokenString := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
+	if ok, err := user.TokenValidInScope(tokenString, "basic"); !ok || err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("invalid token error: %v", err)})
+		return
+	}
 
+	// apply change
 	switch c.PostForm("operator") {
 	case "set":
 		switch c.PostForm("path") {
@@ -100,8 +107,15 @@ func UsersUsernameDELETE(c *gin.Context) {
 		return
 	}
 
+	// check token and scope
+	tokenString := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
+	if ok, err := user.TokenValidInScope(tokenString, "basic"); !ok || err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("invalid token error: %v", err)})
+		return
+	}
+
+	// delete user
 	if err := DeleteUser(user); err != nil {
-		log.Print(err)
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
