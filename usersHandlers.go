@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 // UsersGET sends users as JSON
@@ -21,36 +20,41 @@ func UsersGET(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", b)
 }
 
-// UsersPOST registers new user
-// expects post(username, password, confirm)
-func UsersPOST(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-	confirm := c.PostForm("confirm")
+// UsersPOSTRequest contains fiels for a new user
+type UsersPOSTRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Confirm  string `json:"confirm"`
+}
 
-	if username == "" || password == "" || confirm != password {
+// UsersPOST registers new user
+func UsersPOST(c *gin.Context) {
+	req := &UsersPOSTRequest{}
+	if err := c.BindJSON(req); err != nil {
+		return
+	}
+
+	// TODO: check password strength
+	if req.Username == "" || req.Password == "" || req.Confirm != req.Password {
 		c.JSON(http.StatusUnauthorized, nil)
 		return
 	}
 
-	user, err := NewUser(username, password)
+	// register user
+	user, err := NewUser(req.Username, req.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 
-	c.Header("Location", fmt.Sprintf("/users/%v", user.ID))
+	// Respond with new user location in the api
+	c.Header("Location", fmt.Sprintf("/users/%v", user.Username))
 	c.JSON(http.StatusCreated, nil)
 }
 
 // UsersUsernameGET sends one user as JSON
-// expects param(username)
 func UsersUsernameGET(c *gin.Context) {
-	user, err := GetUserByUsername(c.Param("username"))
-	if err != nil {
-		c.JSON(http.StatusNotFound, nil)
-		return
-	}
+	user := c.MustGet("user").(*User)
 
 	if err := user.FetchProjects(); err != nil {
 		c.JSON(http.StatusInternalServerError, nil)
@@ -60,29 +64,27 @@ func UsersUsernameGET(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// UsersUsernamePATCH updates a user
-// expects param(username), post(operator, path, value)
-func UsersUsernamePATCH(c *gin.Context) {
-	// fetch user from DB
-	user, err := GetUserByUsername(c.Param("username"))
-	if err != nil {
-		c.JSON(http.StatusNotFound, nil)
-		return
-	}
+// UsersUsernamePATCHRequest is the type for a PATCH request on /users/:username
+type UsersUsernamePATCHRequest struct {
+	Operator string `json:"operator"`
+	Path     string `json:"path"`
+	Value    string `json:"value"`
+}
 
-	// check token and scope
-	tokenString := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
-	if ok, err := user.TokenValidInScope(tokenString, "basic"); !ok || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("invalid token error: %v", err)})
+// UsersUsernamePATCH updates a user
+func UsersUsernamePATCH(c *gin.Context) {
+	user := c.MustGet("user").(*User)
+	req := &UsersUsernamePATCHRequest{}
+	if err := c.BindJSON(req); err != nil {
 		return
 	}
 
 	// apply change
-	switch c.PostForm("operator") {
+	switch req.Operator {
 	case "set":
-		switch c.PostForm("path") {
+		switch req.Path {
 		case "password":
-			if err := user.UpdatePassword(c.PostForm("value")); err != nil {
+			if err := user.UpdatePassword(req.Value); err != nil {
 				c.JSON(http.StatusInternalServerError, nil)
 				return
 			}
@@ -99,20 +101,8 @@ func UsersUsernamePATCH(c *gin.Context) {
 }
 
 // UsersUsernameDELETE deletes a user
-// expects param(username)
 func UsersUsernameDELETE(c *gin.Context) {
-	user, err := GetUserByUsername(c.Param("username"))
-	if err != nil {
-		c.JSON(http.StatusNotFound, nil)
-		return
-	}
-
-	// check token and scope
-	tokenString := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
-	if ok, err := user.TokenValidInScope(tokenString, "basic"); !ok || err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": fmt.Sprintf("invalid token error: %v", err)})
-		return
-	}
+	user := c.MustGet("user").(*User)
 
 	// delete user
 	if err := DeleteUser(user); err != nil {

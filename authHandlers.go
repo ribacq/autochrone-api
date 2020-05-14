@@ -6,22 +6,30 @@ import (
 	"net/http"
 )
 
-// AuthPOST replies to an authentication request with a JSON token or error message
-// expects post(username, password)
-func AuthPOST(c *gin.Context) {
+// AuthGETRequest contains authentication fields
+type AuthGETRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+// AuthGET replies to an authentication request with a JSON token or error message
+// expects get(username, password)
+func AuthGET(c *gin.Context) {
 	// gets username and password
-	username := c.PostForm("username")
-	password := c.PostForm("password")
+	req := &AuthGETRequest{}
+	if err := c.BindJSON(req); err != nil {
+		return
+	}
 
 	// get user or replies to request with an error
-	user, err := GetUserByUsername(username)
+	user, err := GetUserByUsername(req.Username)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 
 	// authenticates user or replies with an error
-	if !user.CheckPassword(password) {
+	if !user.CheckPassword(req.Password) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid password"})
 		return
 	}

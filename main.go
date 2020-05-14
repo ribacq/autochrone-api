@@ -9,19 +9,23 @@ func main() {
 	// gin router
 	r := gin.Default()
 
-	// auth
+	// /auth
 	rAuth := r.Group("/auth")
-	rAuth.POST("/", AuthPOST)
+	rAuth.GET("/", AuthGET)
 
-	// users
+	// /users
 	rUsers := r.Group("/users")
 	rUsers.GET("/", UsersGET)
 	rUsers.POST("/", UsersPOST)
-	rUsers.GET("/:username", UsersUsernameGET)
-	rUsers.PATCH("/:username", UsersUsernamePATCH)
-	rUsers.DELETE("/:username", UsersUsernameDELETE)
 
-	/*/ projects
+	// /users/:username
+	rUsersUsername := rUsers.Group("/:username")
+	rUsersUsername.Use(UserLoader)
+	rUsersUsername.GET("", UsersUsernameGET)
+	rUsersUsername.PATCH("", TokenScopeChecker("basic"), UsersUsernamePATCH)
+	rUsersUsername.DELETE("", TokenScopeChecker("basic"), UsersUsernameDELETE)
+
+	/*/ /projects
 	rProjects := rUsers.Group("/:username/projects")
 	rProjects.GET("/", ProjectsGET)
 	rProjects.POST("/", ProjectsPOST)
@@ -29,7 +33,7 @@ func main() {
 	rProjects.PATCH("/:slug", ProjectsIdPATCH)
 	rProjects.DELETE("/:slug", ProjectsIdDELETE)
 
-	// sprints
+	// /sprints
 	rSprints := r.Group("/sprints")
 	rSprints.GET("/", SprintsGET)
 	rSprints.POST("/", SprintsPOST)
