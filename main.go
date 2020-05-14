@@ -2,6 +2,7 @@
 package main
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -9,9 +10,17 @@ func main() {
 	// gin router
 	r := gin.Default()
 
+	// CORS settings
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"http://localhost:4200"}
+	corsConfig.AllowMethods = []string{"GET", "POST", "PATCH", "DELETE"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type"}
+	corsConfig.ExposeHeaders = []string{"Access-Control-Allow-Origin"}
+	r.Use(cors.New(corsConfig))
+
 	// /auth
 	rAuth := r.Group("/auth")
-	rAuth.GET("/", AuthGET)
+	rAuth.POST("/", AuthPOST)
 
 	// /users
 	rUsers := r.Group("/users")

@@ -6,17 +6,16 @@ import (
 	"net/http"
 )
 
-// AuthGETRequest contains authentication fields
-type AuthGETRequest struct {
+// AuthPOSTRequest contains authentication fields
+type AuthPOSTRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-// AuthGET replies to an authentication request with a JSON token or error message
-// expects get(username, password)
-func AuthGET(c *gin.Context) {
+// AuthPOST replies to an authentication request with a JSON token or error message
+func AuthPOST(c *gin.Context) {
 	// gets username and password
-	req := &AuthGETRequest{}
+	req := &AuthPOSTRequest{}
 	if err := c.BindJSON(req); err != nil {
 		return
 	}
