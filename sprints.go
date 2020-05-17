@@ -17,22 +17,22 @@ type Sprint struct {
 	Slug string `db:"slug"`
 
 	// ProjectID the ID of the project the sprint is for
-	ProjectID int `db:"project_id"`
+	ProjectID int `db:"projectId"`
 
 	// TimeStart the moment at which the sprint starts
-	TimeStart time.Time `db:"time_start"`
+	TimeStart time.Time `db:"timeStart"`
 
 	// Duration duration of the sprint in minutes
 	Duration int `db:"duration"`
 
 	// WordCount the word count of the writing project
-	WordCount int `db:"word_count"`
+	WordCount int `db:"wordCount"`
 
 	// Break the break that must follow the sprint in minutes
 	Break int `db:"break"`
 
 	// IsMilestone whether this sprints is a milestone for the project
-	IsMilestone bool `db:"is_milestone"`
+	IsMilestone bool `db:"isMilestone"`
 
 	// Comment a comment on the sprint
 	Comment string `db:"comment"`
