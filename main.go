@@ -34,15 +34,20 @@ func main() {
 	rUsersUsername.PATCH("", TokenScopeChecker("basic"), UsersUsernamePATCH)
 	rUsersUsername.DELETE("", TokenScopeChecker("basic"), UsersUsernameDELETE)
 
-	/*/ /projects
+	// /users/:username/projects
 	rProjects := rUsers.Group("/:username/projects")
+	rProjects.Use(UserLoader)
 	rProjects.GET("/", ProjectsGET)
-	rProjects.POST("/", ProjectsPOST)
-	rProjects.GET("/:slug", ProjectsIdGET)
-	rProjects.PATCH("/:slug", ProjectsIdPATCH)
-	rProjects.DELETE("/:slug", ProjectsIdDELETE)
+	//rProjects.POST("/", ProjectsPOST)
 
-	// /sprints
+	// /users/:username/projects/:slug
+	rProjectsSlug := rProjects.Group("/:slug")
+	rProjectsSlug.Use(ProjectLoader)
+	rProjectsSlug.GET("", ProjectsSlugGET)
+	//rProjects.PATCH("/:slug", ProjectsIdPATCH)
+	//rProjects.DELETE("/:slug", ProjectsIdDELETE)
+
+	/*/ /sprints
 	rSprints := r.Group("/sprints")
 	rSprints.GET("/", SprintsGET)
 	rSprints.POST("/", SprintsPOST)

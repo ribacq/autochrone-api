@@ -13,7 +13,7 @@ type Project struct {
 	ID int `db:"id" json:"id"`
 
 	// UserID the ID of the project owner
-	UserID int `db:"user_id" json:"userID"`
+	UserID int `db:"user_id" json:"userId"`
 
 	// Name the project public name
 	Name string `db:"name" json:"name"`
@@ -37,7 +37,7 @@ type Project struct {
 	// TODO: add a Settings field with for instance which stats to display, privacy settings
 
 	// Sprints the sprints on this project
-	Sprints []*Sprint
+	Sprints []*Sprint `json:"sprints"`
 }
 
 // FetchProjects fetches a user’s projects and returns an error or nil on success

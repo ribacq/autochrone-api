@@ -56,11 +56,6 @@ func UsersPOST(c *gin.Context) {
 func UsersUsernameGET(c *gin.Context) {
 	user := c.MustGet("user").(*User)
 
-	if err := user.FetchProjects(); err != nil {
-		c.JSON(http.StatusInternalServerError, nil)
-		return
-	}
-
 	c.JSON(http.StatusOK, user)
 }
 
@@ -76,14 +71,20 @@ func UsersUsernamePATCH(c *gin.Context) {
 	user := c.MustGet("user").(*User)
 	req := &UsersUsernamePATCHRequest{}
 	if err := c.BindJSON(req); err != nil {
+		c.JSON(http.StatusBadRequest, nil)
 		return
 	}
+	secret := c.GetHeader("Secret")
 
 	// apply change
 	switch req.Operator {
 	case "set":
 		switch req.Path {
 		case "password":
+			if !user.CheckPassword(secret) {
+				c.JSON(http.StatusUnauthorized, nil)
+				return
+			}
 			if err := user.UpdatePassword(req.Value); err != nil {
 				c.JSON(http.StatusInternalServerError, nil)
 				return
@@ -103,6 +104,13 @@ func UsersUsernamePATCH(c *gin.Context) {
 // UsersUsernameDELETE deletes a user
 func UsersUsernameDELETE(c *gin.Context) {
 	user := c.MustGet("user").(*User)
+	secret := c.GetHeader("Secret")
+
+	// check secret
+	if !user.CheckPassword(secret) {
+		c.JSON(http.StatusUnauthorized, nil)
+		return
+	}
 
 	// delete user
 	if err := DeleteUser(user); err != nil {
@@ -110,5 +118,6 @@ func UsersUsernameDELETE(c *gin.Context) {
 		return
 	}
 
+	// user was successfully deleted
 	c.JSON(http.StatusOK, nil)
 }

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// UserLoader: middleware that sets context user using request param username
+// UserLoader: middleware that sets context user using request param :username
 func UserLoader(c *gin.Context) {
 	user, err := GetUserByUsername(c.Param("username"))
 	if err != nil {
@@ -17,6 +17,19 @@ func UserLoader(c *gin.Context) {
 	}
 
 	c.Set("user", user)
+}
+
+// ProjectLoader: middleware that sets context project using request param :slug
+// Must be used after UserLoader
+func ProjectLoader(c *gin.Context) {
+	user := c.MustGet("user").(*User)
+	project, err := user.GetProjectBySlug(c.Param("slug"))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("project not found %q for user %q", c.Param("slug"), user.Username)})
+		return
+	}
+
+	c.Set("project", project)
 }
 
 // TokenScopeChecker: returns a middleware that checks for a given scope.
