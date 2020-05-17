@@ -35,7 +35,7 @@ func UsersPOST(c *gin.Context) {
 	}
 
 	// TODO: check password strength
-	if req.Username == "" || req.Password == "" || req.Confirm != req.Password {
+	if req.Username == "" || len(req.Password) < 8 || req.Confirm != req.Password {
 		c.JSON(http.StatusUnauthorized, nil)
 		return
 	}
@@ -83,6 +83,10 @@ func UsersUsernamePATCH(c *gin.Context) {
 		case "password":
 			if !user.CheckPassword(secret) {
 				c.JSON(http.StatusUnauthorized, nil)
+				return
+			}
+			if len(req.Value) < 8 {
+				c.JSON(http.StatusBadRequest, nil)
 				return
 			}
 			if err := user.UpdatePassword(req.Value); err != nil {

@@ -38,7 +38,7 @@ func main() {
 	rProjects := rUsers.Group("/:username/projects")
 	rProjects.Use(UserLoader)
 	rProjects.GET("/", ProjectsGET)
-	//rProjects.POST("/", ProjectsPOST)
+	rProjects.POST("/", TokenScopeChecker("basic"), ProjectsPOST)
 
 	// /users/:username/projects/:slug
 	rProjectsSlug := rProjects.Group("/:slug")
