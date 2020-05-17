@@ -65,10 +65,10 @@ func (p *Project) FetchSprints() error {
 // DateSprints groups sprints happening on a common date
 type DateSprints struct {
 	// Date the common date of the sprints
-	Date time.Time
+	Date time.Time `json:"date"`
 
 	// Sprints the sprints that have this date in common
-	Sprints []*Sprint
+	Sprints []*Sprint `json:"sprints"`
 }
 
 // GetSprintsByDate returns the sprints for the project grouped by day
