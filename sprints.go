@@ -11,31 +11,31 @@ import (
 // Sprint is a sprint on a project
 type Sprint struct {
 	// ID the sprint ID
-	ID int `db:"id"`
+	ID int `db:"id" json:"id"`
 
 	// Slug what goes in the url when refering to this project. Unique globally.
-	Slug string `db:"slug"`
+	Slug string `db:"slug" json:"slug"`
 
 	// ProjectID the ID of the project the sprint is for
-	ProjectID int `db:"projectId"`
+	ProjectID int `db:"project_id" json:"projectId"`
 
 	// TimeStart the moment at which the sprint starts
-	TimeStart time.Time `db:"timeStart"`
+	TimeStart time.Time `db:"time_start" json:"timeStart"`
 
 	// Duration duration of the sprint in minutes
-	Duration int `db:"duration"`
+	Duration int `db:"duration" json:"duration"`
 
 	// WordCount the word count of the writing project
-	WordCount int `db:"wordCount"`
+	WordCount int `db:"word_count" json:"wordCount"`
 
 	// Break the break that must follow the sprint in minutes
-	Break int `db:"break"`
+	Break int `db:"break" json:"break"`
 
 	// IsMilestone whether this sprints is a milestone for the project
-	IsMilestone bool `db:"isMilestone"`
+	IsMilestone bool `db:"is_milestone" json:"isMilestone"`
 
 	// Comment a comment on the sprint
-	Comment string `db:"comment"`
+	Comment string `db:"comment" json:"comment"`
 }
 
 // FetchSprints fetches the sprints on a given project, returning a potential error

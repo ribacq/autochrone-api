@@ -18,11 +18,11 @@ func main() {
 	corsConfig.ExposeHeaders = []string{"Access-Control-Allow-Origin"}
 	r.Use(cors.New(corsConfig))
 
-	// /auth
+	// /auth/
 	rAuth := r.Group("/auth")
 	rAuth.POST("/", AuthPOST)
 
-	// /users
+	// /users/
 	rUsers := r.Group("/users")
 	rUsers.GET("/", UsersGET)
 	rUsers.POST("/", UsersPOST)
@@ -34,7 +34,7 @@ func main() {
 	rUsersUsername.PATCH("", TokenScopeChecker("basic"), UsersUsernamePATCH)
 	rUsersUsername.DELETE("", TokenScopeChecker("basic"), UsersUsernameDELETE)
 
-	// /users/:username/projects
+	// /users/:username/projects/
 	rProjects := rUsers.Group("/:username/projects")
 	rProjects.Use(UserLoader)
 	rProjects.GET("/", ProjectsGET)
@@ -47,10 +47,10 @@ func main() {
 	//rProjects.PATCH("/:slug", ProjectsIdPATCH)
 	//rProjects.DELETE("/:slug", ProjectsIdDELETE)
 
-	/*/ /sprints
+	// /sprints/
 	rSprints := r.Group("/sprints")
 	rSprints.GET("/", SprintsGET)
-	rSprints.POST("/", SprintsPOST)
+	/*rSprints.POST("/", SprintsPOST)
 	rSprints.GET("/:id", SprintsIdGET)
 	rSprints.PATCH("/:id", SprintsIdPATCH)
 	rSprints.DELETE("/:id", SprintsIdDELETE)*/
