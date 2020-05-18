@@ -19,8 +19,8 @@ func ProjectsGET(c *gin.Context) {
 	c.JSON(http.StatusOK, user.Projects)
 }
 
-// ProjectsPOSTRequest determines fields for a new project
-type ProjectsPOSTRequest struct {
+// ProjectRequest determines fields for a project request
+type ProjectRequest struct {
 	Name           string `json:"name"`
 	Slug           string `json:"slug"`
 	DateStart      string `json:"dateStart"`
@@ -32,7 +32,7 @@ type ProjectsPOSTRequest struct {
 // ProjectsPOST adds a new project and responds with its API location in a Location header
 func ProjectsPOST(c *gin.Context) {
 	user := c.MustGet("user").(*User)
-	req := &ProjectsPOSTRequest{}
+	req := &ProjectRequest{}
 	if err := c.BindJSON(req); err != nil {
 		return
 	}
@@ -41,6 +41,7 @@ func ProjectsPOST(c *gin.Context) {
 	dateEnd, errDateEnd := time.Parse("2006-01-02", req.DateEnd)
 	if errDateStart != nil || errDateEnd != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 	project, err := user.NewProject(req.Name, req.Slug, dateStart, dateEnd, req.WordCountStart, req.WordCountGoal)
 	if err != nil {
@@ -49,7 +50,7 @@ func ProjectsPOST(c *gin.Context) {
 	}
 
 	c.Header("Location", fmt.Sprintf("/users/%s/projects/%s", user.Username, project.Slug))
-	c.JSON(http.StatusOK, nil)
+	c.Status(http.StatusOK)
 }
 
 // ProjectsSlugGET responds with a single project for a given user
@@ -57,4 +58,37 @@ func ProjectsSlugGET(c *gin.Context) {
 	project := c.MustGet("project").(*Project)
 
 	c.JSON(http.StatusOK, project)
+}
+
+// ProjectsSlugPUT updates a whole project
+func ProjectsSlugPUT(c *gin.Context) {
+	project := c.MustGet("project").(*Project)
+	req := &ProjectRequest{}
+	if err := c.BindJSON(req); err != nil {
+		return
+	}
+
+	if project.Slug != req.Slug {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	dateStart, errDateStart := time.Parse("2006-01-02", req.DateStart)
+	dateEnd, errDateEnd := time.Parse("2006-01-02", req.DateEnd)
+	if errDateStart != nil || errDateEnd != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	project.Name = req.Name
+	project.DateStart = dateStart
+	project.DateEnd = dateEnd
+	project.WordCountStart = req.WordCountStart
+	project.WordCountGoal = req.WordCountGoal
+	if err := project.Update(); err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

@@ -44,8 +44,9 @@ func main() {
 	rProjectsSlug := rProjects.Group("/:slug")
 	rProjectsSlug.Use(ProjectLoader)
 	rProjectsSlug.GET("", ProjectsSlugGET)
-	//rProjects.PATCH("/:slug", ProjectsIdPATCH)
-	//rProjects.DELETE("/:slug", ProjectsIdDELETE)
+	rProjectsSlug.PUT("", TokenScopeChecker("basic"), ProjectsSlugPUT)
+	//rProjects.PATCH("", ProjectsIdPATCH)
+	//rProjects.DELETE("", ProjectsIdDELETE)
 
 	// /sprints/
 	rSprints := r.Group("/sprints")
