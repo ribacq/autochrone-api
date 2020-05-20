@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -45,6 +46,7 @@ func ProjectsPOST(c *gin.Context) {
 	}
 	project, err := user.NewProject(req.Name, req.Slug, dateStart, dateEnd, req.WordCountStart, req.WordCountGoal)
 	if err != nil {
+		log.Print(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

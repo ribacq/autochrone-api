@@ -4,6 +4,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
+	"errors"
+	"log"
 	"time"
 )
 
@@ -108,6 +110,12 @@ func (u *User) NewProject(name, slug string, dateStart, dateEnd time.Time, wordC
 		DateEnd:        dateEnd,
 		WordCountStart: wordCountStart,
 		WordCountGoal:  wordCountGoal,
+	}
+
+	log.Print(p)
+
+	if p.Name == "" || p.Slug == "" || p.DateStart.Before(time.Now().Truncate(time.Hour*time.Duration(24))) || p.DateEnd.Before(p.DateStart) || p.WordCountStart < 1 || p.WordCountGoal < p.WordCountStart {
+		return nil, errors.New("NewProject: invalid data")
 	}
 
 	db, err := sqlx.Open("postgres", connStr)
