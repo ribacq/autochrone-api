@@ -114,7 +114,7 @@ func (u *User) NewProject(name, slug string, dateStart, dateEnd time.Time, wordC
 
 	log.Print(p)
 
-	if p.Name == "" || p.Slug == "" || p.DateStart.Before(time.Now().Truncate(time.Hour*time.Duration(24))) || p.DateEnd.Before(p.DateStart) || p.WordCountStart < 1 || p.WordCountGoal < p.WordCountStart {
+	if p.Name == "" || p.Slug == "" || p.DateStart.Before(time.Now().Truncate(time.Hour*time.Duration(24))) || p.DateEnd.Before(p.DateStart) || p.WordCountStart < 0 || p.WordCountGoal < p.WordCountStart {
 		return nil, errors.New("NewProject: invalid data")
 	}
 
