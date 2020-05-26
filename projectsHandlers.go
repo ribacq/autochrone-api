@@ -94,3 +94,14 @@ func ProjectsSlugPUT(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+// ProjectsSlugDELETE deletes a whole project and all its sprints
+func ProjectsSlugDELETE(c *gin.Context) {
+	project := c.MustGet("project").(*Project)
+
+	if err := project.Delete(); err != nil {
+		c.Status(http.StatusInternalServerError)
+	}
+
+	c.Status(http.StatusOK)
+}
