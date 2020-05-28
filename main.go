@@ -14,8 +14,8 @@ func main() {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{"http://localhost:4200"}
 	corsConfig.AllowMethods = []string{"GET", "POST", "PATCH", "DELETE"}
-	corsConfig.AllowHeaders = []string{"Origin", "Content-Type"}
-	corsConfig.ExposeHeaders = []string{"Access-Control-Allow-Origin"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	corsConfig.ExposeHeaders = []string{"Access-Control-Allow-Origin", "Location"}
 	r.Use(cors.New(corsConfig))
 
 	// /auth/

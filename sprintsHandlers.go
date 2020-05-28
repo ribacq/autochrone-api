@@ -30,6 +30,7 @@ type SprintRequest struct {
 // SprintsPOST saves a given sprint and returns its API location
 // requires json(timeStart, duration, break)
 func SprintsPOST(c *gin.Context) {
+	user := c.MustGet("user").(*User)
 	project := c.MustGet("project").(*Project)
 
 	req := &SprintRequest{}
@@ -38,7 +39,7 @@ func SprintsPOST(c *gin.Context) {
 		return
 	}
 
-	timeStart, err := time.Parse("2006-01-02 15:04:05", req.TimeStart)
+	timeStart, err := time.Parse("2006-01-02T15:04:05-0700", req.TimeStart)
 	if err != nil || req.Duration < 1 || req.Duration < 0 {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
@@ -50,6 +51,6 @@ func SprintsPOST(c *gin.Context) {
 		return
 	}
 
-	c.Header("Location", fmt.Sprintf("/sprints/%s", sprint.Slug))
+	c.Header("Location", fmt.Sprintf("/users/%s/projects/%s/sprints/%s", user.Username, project.Slug, sprint.Slug))
 	c.Status(http.StatusOK)
 }
