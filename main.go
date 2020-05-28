@@ -35,26 +35,27 @@ func main() {
 	rUsersUsername.DELETE("", TokenScopeChecker("basic"), UsersUsernameDELETE)
 
 	// /users/:username/projects/
-	rProjects := rUsers.Group("/:username/projects")
-	rProjects.Use(UserLoader)
+	rProjects := rUsersUsername.Group("/projects")
 	rProjects.GET("/", ProjectsGET)
 	rProjects.POST("/", TokenScopeChecker("basic"), ProjectsPOST)
 
-	// /users/:username/projects/:slug
-	rProjectsSlug := rProjects.Group("/:slug")
+	// /users/:username/projects/:pslug
+	rProjectsSlug := rProjects.Group("/:pslug")
 	rProjectsSlug.Use(ProjectLoader)
 	rProjectsSlug.GET("", ProjectsSlugGET)
 	rProjectsSlug.PUT("", TokenScopeChecker("basic"), ProjectsSlugPUT)
 	//rProjectsSlug.PATCH("", ProjectsSlugPATCH)
 	rProjectsSlug.DELETE("", TokenScopeChecker("basic"), ProjectsSlugDELETE)
 
-	// /sprints/
-	rSprints := r.Group("/sprints")
+	// /users/:username/projects/:pslug/sprints/
+	rSprints := rProjectsSlug.Group("/sprints")
 	rSprints.GET("/", SprintsGET)
-	/*rSprints.POST("/", SprintsPOST)
-	rSprints.GET("/:id", SprintsIdGET)
-	rSprints.PATCH("/:id", SprintsIdPATCH)
-	rSprints.DELETE("/:id", SprintsIdDELETE)*/
+	rSprints.POST("/", TokenScopeChecker("basic"), SprintsPOST)
+
+	// /users/:username/sprints/:sslug
+	/*rSprints.GET("/:sslug", SprintsSlugGET)
+	rSprints.PATCH("/:sslug", SprintsSlugPATCH)
+	rSprints.DELETE("/:sslug", SprintsSlugDELETE)*/
 
 	r.Run(":8080")
 }

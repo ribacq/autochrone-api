@@ -4,6 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
+	"errors"
 	"fmt"
 	"time"
 )
@@ -127,12 +128,17 @@ func GetSprintBySlug(slug string) (*Sprint, error) {
 }
 
 // NewSprint adds a sprint to a project and inserts it in the database
-func (p *Project) NewSprint(timeStart time.Time, duration int) (*Sprint, error) {
+func (p *Project) NewSprint(timeStart time.Time, duration, pomodoroBreak int) (*Sprint, error) {
+	if duration < 1 || pomodoroBreak < 0 {
+		return nil, errors.New("NewSprint: invalid duration or pomodoroBreak values")
+	}
+
 	s := &Sprint{
 		Slug:      fmt.Sprintf("%xo%x", p.ID, timeStart.UTC().UnixNano()),
 		ProjectID: p.ID,
 		TimeStart: timeStart.UTC(),
 		Duration:  duration,
+		Break:     pomodoroBreak,
 	}
 
 	db, err := sqlx.Open("postgres", connStr)
@@ -146,7 +152,7 @@ func (p *Project) NewSprint(timeStart time.Time, duration int) (*Sprint, error) 
 			slug, project_id, time_start, duration, break, word_count, is_milestone, comment
 		) values ($1, $2, $3, $4, $5, $6, $7, $8)
 		returning id
-	`, s.Slug, s.ProjectID, s.TimeStart.UTC().Format("2006-01-02 15:04:05"), s.Duration, 0, 0, false, "")
+	`, s.Slug, s.ProjectID, s.TimeStart.UTC().Format("2006-01-02 15:04:05"), s.Duration, s.Break, 0, false, "")
 	if err := row.Scan(&(s.ID)); err != nil {
 		return nil, err
 	}

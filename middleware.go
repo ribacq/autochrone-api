@@ -23,9 +23,9 @@ func UserLoader(c *gin.Context) {
 // Must be used after UserLoader
 func ProjectLoader(c *gin.Context) {
 	user := c.MustGet("user").(*User)
-	project, err := user.GetProjectBySlug(c.Param("slug"))
+	project, err := user.GetProjectBySlug(c.Param("pslug"))
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("project not found %q for user %q", c.Param("slug"), user.Username)})
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("project not found %q for user %q", c.Param("pslug"), user.Username)})
 		return
 	}
 
