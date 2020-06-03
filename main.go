@@ -42,19 +42,21 @@ func main() {
 	// /users/:username/projects/:pslug
 	rProjectsSlug := rProjects.Group("/:pslug")
 	rProjectsSlug.Use(ProjectLoader)
-	rProjectsSlug.GET("", ProjectsSlugGET)
-	rProjectsSlug.PUT("", TokenScopeChecker("basic"), ProjectsSlugPUT)
+	rProjectsSlug.GET("/", ProjectsSlugGET)
+	rProjectsSlug.PUT("/", TokenScopeChecker("basic"), ProjectsSlugPUT)
 	//rProjectsSlug.PATCH("", ProjectsSlugPATCH)
-	rProjectsSlug.DELETE("", TokenScopeChecker("basic"), ProjectsSlugDELETE)
+	rProjectsSlug.DELETE("/", TokenScopeChecker("basic"), ProjectsSlugDELETE)
 
 	// /users/:username/projects/:pslug/sprints/
 	rSprints := rProjectsSlug.Group("/sprints")
 	rSprints.GET("/", SprintsGET)
 	rSprints.POST("/", TokenScopeChecker("basic"), SprintsPOST)
 
-	// /users/:username/sprints/:sslug
-	/*rSprints.GET("/:sslug", SprintsSlugGET)
-	rSprints.PATCH("/:sslug", SprintsSlugPATCH)
+	// /users/:username/projects/:pslug/sprints/:sslug
+	rSprintsSlug := rSprints.Group("/:sslug")
+	rSprintsSlug.Use(SprintLoader)
+	rSprintsSlug.GET("/", SprintsSlugGET)
+	/*rSprints.PATCH("/:sslug", SprintsSlugPATCH)
 	rSprints.DELETE("/:sslug", SprintsSlugDELETE)*/
 
 	r.Run(":8080")

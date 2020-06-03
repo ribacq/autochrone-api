@@ -19,7 +19,7 @@ func UserLoader(c *gin.Context) {
 	c.Set("user", user)
 }
 
-// ProjectLoader: middleware that sets context project using request param :slug
+// ProjectLoader: middleware that sets context project using request param :pslug
 // Must be used after UserLoader
 func ProjectLoader(c *gin.Context) {
 	user := c.MustGet("user").(*User)
@@ -30,6 +30,17 @@ func ProjectLoader(c *gin.Context) {
 	}
 
 	c.Set("project", project)
+}
+
+// SprintLoader: middleware that sets context sprint using request param :sslug
+func SprintLoader(c *gin.Context) {
+	sprint, err := GetSprintBySlug(c.Param("sslug"))
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("sprint not found %q", c.Param("sslug"))})
+		return
+	}
+
+	c.Set("sprint", sprint)
 }
 
 // TokenScopeChecker: returns a middleware that checks for a given scope.

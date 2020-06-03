@@ -54,3 +54,10 @@ func SprintsPOST(c *gin.Context) {
 	c.Header("Location", fmt.Sprintf("/users/%s/projects/%s/sprints/%s", user.Username, project.Slug, sprint.Slug))
 	c.Status(http.StatusOK)
 }
+
+// SprintsSlugGET returns a specific sprint
+func SprintsSlugGET(c *gin.Context) {
+	sprint := c.MustGet("sprint").(*Sprint)
+
+	c.JSON(http.StatusOK, sprint)
+}
