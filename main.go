@@ -56,8 +56,8 @@ func main() {
 	rSprintsSlug := rSprints.Group("/:sslug")
 	rSprintsSlug.Use(SprintLoader)
 	rSprintsSlug.GET("/", SprintsSlugGET)
-	/*rSprints.PATCH("/:sslug", SprintsSlugPATCH)
-	rSprints.DELETE("/:sslug", SprintsSlugDELETE)*/
+	rSprintsSlug.PUT("/", TokenScopeChecker("basic"), SprintsSlugPUT)
+	/*rSprints.DELETE("/:sslug", SprintsSlugDELETE)*/
 
 	r.Run(":8080")
 }

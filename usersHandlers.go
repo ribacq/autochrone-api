@@ -67,6 +67,7 @@ type UsersUsernamePATCHRequest struct {
 }
 
 // UsersUsernamePATCH updates a user
+// requires a UsersUsernamePATCHRequest as JSON
 func UsersUsernamePATCH(c *gin.Context) {
 	user := c.MustGet("user").(*User)
 	req := &UsersUsernamePATCHRequest{}
