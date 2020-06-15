@@ -196,6 +196,28 @@ func (s *Sprint) Delete() error {
 	return nil
 }
 
+// GetNextSprintIfExists returns a the sprint on the same project that starts at sprint.TimeEnd + sprint.Break.
+// returns a pointer to sprint and a boolean set to true if it was found.
+func (s *Sprint) GetNextSprintIfExists() (nextSprint *Sprint, ok bool) {
+	db, err := sqlx.Open("postgres", connStr)
+	if err != nil {
+		return nil, false
+	}
+	defer db.Close()
+
+	nextSprint = &Sprint{}
+	if err := db.Get(nextSprint, "select * from autochrone.sprints where project_id = $1 and time_start > $2 order by time_start asc limit 1", s.ProjectID, s.TimeEnd().UTC().Format("2006-01-02 15:04:05")); err != nil {
+		return nil, false
+	}
+
+	return nextSprint, true
+}
+
+// IsSingleSprint returns true if the sprint is not in a pomodoro streak
+func (s *Sprint) IsSingleSprint() bool {
+	return s.Break == 0
+}
+
 // TimeEnd returns the time at which the sprint ends
 func (s *Sprint) TimeEnd() time.Time {
 	return s.TimeStart.Add(time.Duration(s.Duration) * time.Minute)
