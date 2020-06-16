@@ -135,3 +135,15 @@ func SprintsSlugNextSprintPOST(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, nextSprint)
 }
+
+// SprintsSlugDELETE deletes a sprint
+func SprintsSlugDELETE(c *gin.Context) {
+	sprint := c.MustGet("sprint").(*Sprint)
+
+	if err := sprint.Delete(); err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
