@@ -39,7 +39,7 @@ type Sprint struct {
 	Comment string `db:"comment" json:"comment"`
 
 	// InviteSlug the invite slug, empty if the sprint is not open to guests
-	InviteSlug string `db:"invite_slug" json:"comment"`
+	InviteSlug string `db:"invite_slug" json:"inviteSlug"`
 
 	// InviteComment the invite comment, empty if the sprint is not open to guests
 	InviteComment string `db:"invite_comment" json:"inviteComment"`
@@ -54,7 +54,7 @@ func (p *Project) FetchSprints() error {
 	defer db.Close()
 
 	rows, err := db.Queryx(`select sprints.*, coalesce(host_sprints.invite_slug, '') invite_slug, coalesce(host_sprints.comment, '') invite_comment
-		from autochrone.sprints left outer join host_sprints on sprints.id = host_sprints.host_sprint_id
+		from autochrone.sprints left outer join autochrone.host_sprints on sprints.id = host_sprints.host_sprint_id
 		where project_id = $1
 		order by time_start desc`, p.ID)
 	if err != nil {
@@ -115,7 +115,9 @@ func GetSprintByID(id int) (*Sprint, error) {
 	defer db.Close()
 
 	s := &Sprint{}
-	if err := db.Get(s, "select * from autochrone.sprints where id = $1", id); err != nil {
+	if err := db.Get(s, `select sprints.*, coalesce(host_sprints.invite_slug, '') invite_slug, coalesce(host_sprints.comment, '') invite_comment
+		from autochrone.sprints left outer join autochrone.host_sprints on sprints.id = host_sprints.host_sprint_id
+		where id = $1`, id); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -130,7 +132,9 @@ func GetSprintBySlug(slug string) (*Sprint, error) {
 	defer db.Close()
 
 	s := &Sprint{}
-	if err := db.Get(s, "select * from autochrone.sprints where slug = $1", slug); err != nil {
+	if err := db.Get(s, `select sprints.*, coalesce(host_sprints.invite_slug, '') invite_slug, coalesce(host_sprints.comment, '') invite_comment
+		from autochrone.sprints left outer join autochrone.host_sprints on sprints.id = host_sprints.host_sprint_id
+		where slug = $1`, slug); err != nil {
 		return nil, err
 	}
 	return s, nil
