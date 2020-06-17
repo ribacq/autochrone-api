@@ -10,16 +10,6 @@ users (
 	password_salt varchar not null
 );
 
--- access_tokens
-create table if not exists
-access_tokens (
-	id serial primary key,
-	user_id int not null references users(id),
-	token_type varchar not null,
-	expires_on timestamp not null,
-	scope varchar not null
-);
-
 -- projects
 create table if not exists
 projects (
@@ -35,7 +25,6 @@ projects (
 );
 
 -- sprints
--- TODO: for multi user support, divide sprints table into sprints and sprints_participants
 create table if not exists
 sprints (
 	id serial primary key,
@@ -46,5 +35,21 @@ sprints (
 	break int not null default 0,
 	word_count int not null,
 	is_milestone boolean not null,
-	comment varchar not null
+	comment varchar(1000) not null
+);
+
+-- host_sprints
+create table if not exists
+host_sprints (
+	host_sprint_id int primary key references sprints(id),
+	invite_slug varchar(128) unique not null,
+	comment varchar(1000) not null
+);
+
+-- guest_sprints
+create table if not exists
+guest_sprints (
+	guest_sprint_id int primary key references sprints(id),
+	host_sprint_id int not null references host_sprints(host_sprint_id),
+	check (guest_sprint_id != host_sprint_id)
 );

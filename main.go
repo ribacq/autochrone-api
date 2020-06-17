@@ -59,6 +59,7 @@ func main() {
 	rSprintsSlug.PUT("/", TokenScopeChecker("basic"), SprintsSlugPUT)
 	rSprintsSlug.DELETE("/", TokenScopeChecker("basic"), SprintsSlugDELETE)
 	rSprintsSlug.POST("/next-sprint", TokenScopeChecker("basic"), SprintsSlugNextSprintPOST)
+	rSprintsSlug.POST("/open", TokenScopeChecker("basic"), SprintsSlugOpenPOST)
 
 	r.Run(":8080")
 }

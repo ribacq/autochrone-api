@@ -147,3 +147,27 @@ func SprintsSlugDELETE(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+// SprintsSlugOpenPOSTRequest: a comment is needed in open sprints
+type SprintsSlugOpenPOSTRequest struct {
+	Comment string `json:"comment"`
+}
+
+// SprintsSlugOpenPOST opens a sprint to guests
+func SprintsSlugOpenPOST(c *gin.Context) {
+	sprint := c.MustGet("sprint").(*Sprint)
+
+	req := &SprintsSlugOpenPOSTRequest{}
+	if err := c.BindJSON(req); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	inviteSlug, err := sprint.OpenToGuests(req.Comment)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"inviteSlug": inviteSlug})
+}

@@ -37,6 +37,12 @@ type Sprint struct {
 
 	// Comment a comment on the sprint
 	Comment string `db:"comment" json:"comment"`
+
+	// InviteSlug the invite slug, empty if the sprint is not open to guests
+	InviteSlug string `db:"invite_slug" json:"comment"`
+
+	// InviteComment the invite comment, empty if the sprint is not open to guests
+	InviteComment string `db:"invite_comment" json:"inviteComment"`
 }
 
 // FetchSprints fetches the sprints on a given project, returning a potential error
@@ -47,7 +53,10 @@ func (p *Project) FetchSprints() error {
 	}
 	defer db.Close()
 
-	rows, err := db.Queryx("select * from autochrone.sprints where project_id = $1 order by time_start desc", p.ID)
+	rows, err := db.Queryx(`select sprints.*, coalesce(host_sprints.invite_slug, '') invite_slug, coalesce(host_sprints.comment, '') invite_comment
+		from autochrone.sprints left outer join host_sprints on sprints.id = host_sprints.host_sprint_id
+		where project_id = $1
+		order by time_start desc`, p.ID)
 	if err != nil {
 		return err
 	}
@@ -134,7 +143,7 @@ func (p *Project) NewSprint(timeStart time.Time, duration, pomodoroBreak int) (*
 	}
 
 	s := &Sprint{
-		Slug:      fmt.Sprintf("%xo%x", p.ID, timeStart.UTC().UnixNano()),
+		Slug:      fmt.Sprintf("%x.%x", p.ID, timeStart.UTC().UnixNano()),
 		ProjectID: p.ID,
 		TimeStart: timeStart.UTC(),
 		Duration:  duration,
@@ -356,4 +365,21 @@ func (s *Sprint) MilestoneTimeSpent() (time.Duration, error) {
 	}
 
 	return time.Duration(d) * time.Minute, nil
+}
+
+// OpenToGuests opens the sprint to guests, sets the public comment and returns the invite slug (and error).
+func (s *Sprint) OpenToGuests(comment string) (string, error) {
+	db, err := sqlx.Open("postgres", connStr)
+	if err != nil {
+		return "", err
+	}
+	defer db.Close()
+
+	inviteSlug := fmt.Sprintf("%s.%x", s.Slug, time.Now().UnixNano())
+	_, err = db.Queryx("insert into autochrone.host_sprints (host_sprint_id, invite_slug, comment) values ($1, $2, $3)", s.ID, inviteSlug, comment)
+	if err != nil {
+		return "", err
+	}
+
+	return inviteSlug, nil
 }
