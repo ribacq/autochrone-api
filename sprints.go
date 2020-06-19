@@ -17,6 +17,12 @@ type Sprint struct {
 	// Slug what goes in the url when refering to this project. Unique globally.
 	Slug string `db:"slug" json:"slug"`
 
+	// Username the username of the sprint’s project’s user
+	Username string `db:"username" json:"username"`
+
+	// ProjectSlug the slug of the project the sprint is for
+	ProjectSlug string `db:"project_slug" json:"pslug"`
+
 	// ProjectID the ID of the project the sprint is for
 	ProjectID int `db:"project_id" json:"projectId"`
 
@@ -53,10 +59,7 @@ func (p *Project) FetchSprints() error {
 	}
 	defer db.Close()
 
-	rows, err := db.Queryx(`select sprints.*, coalesce(host_sprints.invite_slug, '') invite_slug, coalesce(host_sprints.comment, '') invite_comment
-		from autochrone.sprints left outer join autochrone.host_sprints on sprints.id = host_sprints.host_sprint_id
-		where project_id = $1
-		order by time_start desc`, p.ID)
+	rows, err := db.Queryx("select * from sprints_with_details where project_id = $1 order by time_start desc", p.ID)
 	if err != nil {
 		return err
 	}
@@ -115,9 +118,7 @@ func GetSprintByID(id int) (*Sprint, error) {
 	defer db.Close()
 
 	s := &Sprint{}
-	if err := db.Get(s, `select sprints.*, coalesce(host_sprints.invite_slug, '') invite_slug, coalesce(host_sprints.comment, '') invite_comment
-		from autochrone.sprints left outer join autochrone.host_sprints on sprints.id = host_sprints.host_sprint_id
-		where id = $1`, id); err != nil {
+	if err := db.Get(s, "select * from sprints_with_details where id = $1", id); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -132,9 +133,7 @@ func GetSprintBySlug(slug string) (*Sprint, error) {
 	defer db.Close()
 
 	s := &Sprint{}
-	if err := db.Get(s, `select sprints.*, coalesce(host_sprints.invite_slug, '') invite_slug, coalesce(host_sprints.comment, '') invite_comment
-		from autochrone.sprints left outer join autochrone.host_sprints on sprints.id = host_sprints.host_sprint_id
-		where slug = $1`, slug); err != nil {
+	if err := db.Get(s, "select * from sprints_with_details where slug = $1", slug); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -229,6 +228,11 @@ func (s *Sprint) GetNextSprintIfExists() (nextSprint *Sprint, ok bool) {
 // IsSingleSprint returns true if the sprint is not in a pomodoro streak
 func (s *Sprint) IsSingleSprint() bool {
 	return s.Break == 0
+}
+
+// IsOpenToGuests is true if a sprint has an invite slug
+func (s *Sprint) IsOpenToGuests() bool {
+	return s.InviteSlug != ""
 }
 
 // TimeEnd returns the time at which the sprint ends
@@ -386,4 +390,31 @@ func (s *Sprint) OpenToGuests(comment string) (string, error) {
 	}
 
 	return inviteSlug, nil
+}
+
+// GetGuestSprints get the guest sprints from the database (and error).
+func (s *Sprint) GetGuestSprints() ([]*Sprint, error) {
+	db, err := sqlx.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Queryx(`select *
+		from sprints_with_details
+		inner join guest_sprints on sprints_with_details.id = guest_sprints.host_sprint_id
+		where guest_sprints.host_sprint_id = $1`, s.ID)
+	if err != nil {
+		return nil, err
+	}
+	guestSprints := []*Sprint{}
+	for rows.Next() {
+		s := &Sprint{}
+		if err := rows.StructScan(s); err != nil {
+			return nil, err
+		}
+		guestSprints = append(guestSprints, s)
+	}
+
+	return guestSprints, nil
 }

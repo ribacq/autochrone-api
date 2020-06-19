@@ -53,3 +53,15 @@ guest_sprints (
 	host_sprint_id int not null references host_sprints(host_sprint_id),
 	check (guest_sprint_id != host_sprint_id)
 );
+
+-- sprints_with_details
+create or replace view sprints_with_details as select
+	sprints.*,
+	coalesce(host_sprints.invite_slug, '') invite_slug,
+	coalesce(host_sprints.comment, '') invite_comment,
+	projects.slug project_slug,
+	users.username
+	from autochrone.sprints
+		inner join autochrone.projects on sprints.project_id = projects.id
+		inner join autochrone.users on projects.user_id = users.id
+		left outer join host_sprints on sprints.id = host_sprints.host_sprint_id;

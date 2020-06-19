@@ -171,3 +171,21 @@ func SprintsSlugOpenPOST(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"inviteSlug": inviteSlug})
 }
+
+// SprintsSlugGuestsGET fetches the guest sprints
+func SprintsSlugGuestsGET(c *gin.Context) {
+	sprint := c.MustGet("sprint").(*Sprint)
+
+	if !sprint.IsOpenToGuests() {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	guestSprints, err := sprint.GetGuestSprints()
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, guestSprints)
+}

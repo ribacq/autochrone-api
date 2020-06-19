@@ -60,6 +60,7 @@ func main() {
 	rSprintsSlug.DELETE("/", TokenScopeChecker("basic"), SprintsSlugDELETE)
 	rSprintsSlug.POST("/next-sprint", TokenScopeChecker("basic"), SprintsSlugNextSprintPOST)
 	rSprintsSlug.POST("/open", TokenScopeChecker("basic"), SprintsSlugOpenPOST)
+	rSprintsSlug.GET("/guests", SprintsSlugGuestsGET)
 
 	r.Run(":8080")
 }
