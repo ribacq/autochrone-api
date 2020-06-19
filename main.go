@@ -62,5 +62,9 @@ func main() {
 	rSprintsSlug.POST("/open", TokenScopeChecker("basic"), SprintsSlugOpenPOST)
 	rSprintsSlug.GET("/guests", SprintsSlugGuestsGET)
 
+	// /users/:username/projects/:pslug/join-invite/:islug
+	rJoinInviteSlug := rProjectsSlug.Group("/join-invite/:islug")
+	rJoinInviteSlug.GET("", TokenScopeChecker("basic"), JoinInviteSlugGET)
+
 	r.Run(":8080")
 }

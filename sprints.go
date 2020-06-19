@@ -139,6 +139,21 @@ func GetSprintBySlug(slug string) (*Sprint, error) {
 	return s, nil
 }
 
+// GetSprintByInviteSlug returns the sprint with the given invite slug in autochrone.host_sprints sql table
+func GetSprintByInviteSlug(inviteSlug string) (*Sprint, error) {
+	db, err := sqlx.Open("postgres", connStr)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	s := &Sprint{}
+	if err := db.Get(s, "select * from sprints_with_details where invite_slug = $1", inviteSlug); err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
 // NewSprint adds a sprint to a project and inserts it in the database
 func (p *Project) NewSprint(timeStart time.Time, duration, pomodoroBreak int) (*Sprint, error) {
 	if duration < 1 || pomodoroBreak < 0 {
@@ -417,4 +432,13 @@ func (s *Sprint) GetGuestSprints() ([]*Sprint, error) {
 	}
 
 	return guestSprints, nil
+}
+
+// NewGuestSprint creates a guest sprint on the given project with the model host sprint
+func (p *Project) NewGuestSprint(hostSprint *Sprint) (*Sprint, error) {
+	if hostSprint.Over() {
+		return nil, errors.New("NewGuestSprint: host sprint is over.")
+	}
+
+	return p.NewSprint(hostSprint.TimeStart, hostSprint.Duration, hostSprint.Break)
 }
