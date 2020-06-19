@@ -12,20 +12,20 @@ func main() {
 
 	// CORS settings
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:4200"}
-	corsConfig.AllowMethods = []string{"GET", "POST", "PATCH", "DELETE"}
-	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
-	corsConfig.ExposeHeaders = []string{"Access-Control-Allow-Origin", "Location"}
+	corsConfig.AllowOrigins = []string{"http://192.168.43.126:4200", "http://localhost:4200", "http://192.168.43.1:4200"}
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE"}
+	corsConfig.AllowHeaders = []string{"Content-Type", "Authorization", "Origin"}
+	corsConfig.ExposeHeaders = []string{"Location", "Access-Control-Allow-Origin"}
 	r.Use(cors.New(corsConfig))
 
 	// /auth/
-	rAuth := r.Group("/auth")
-	rAuth.POST("/", AuthPOST)
+	rAuth := r.Group("/auth/")
+	rAuth.POST("", AuthPOST)
 
 	// /users/
-	rUsers := r.Group("/users")
-	rUsers.GET("/", UsersGET)
-	rUsers.POST("/", UsersPOST)
+	rUsers := r.Group("/users/")
+	rUsers.GET("", UsersGET)
+	rUsers.POST("", UsersPOST)
 
 	// /users/:username
 	rUsersUsername := rUsers.Group("/:username")
@@ -35,29 +35,29 @@ func main() {
 	rUsersUsername.DELETE("", TokenScopeChecker("basic"), UsersUsernameDELETE)
 
 	// /users/:username/projects/
-	rProjects := rUsersUsername.Group("/projects")
-	rProjects.GET("/", ProjectsGET)
-	rProjects.POST("/", TokenScopeChecker("basic"), ProjectsPOST)
+	rProjects := rUsersUsername.Group("/projects/")
+	rProjects.GET("", ProjectsGET)
+	rProjects.POST("", TokenScopeChecker("basic"), ProjectsPOST)
 
 	// /users/:username/projects/:pslug
 	rProjectsSlug := rProjects.Group("/:pslug")
 	rProjectsSlug.Use(ProjectLoader)
-	rProjectsSlug.GET("/", ProjectsSlugGET)
-	rProjectsSlug.PUT("/", TokenScopeChecker("basic"), ProjectsSlugPUT)
+	rProjectsSlug.GET("", ProjectsSlugGET)
+	rProjectsSlug.PUT("", TokenScopeChecker("basic"), ProjectsSlugPUT)
 	//rProjectsSlug.PATCH("", ProjectsSlugPATCH)
-	rProjectsSlug.DELETE("/", TokenScopeChecker("basic"), ProjectsSlugDELETE)
+	rProjectsSlug.DELETE("", TokenScopeChecker("basic"), ProjectsSlugDELETE)
 
 	// /users/:username/projects/:pslug/sprints/
-	rSprints := rProjectsSlug.Group("/sprints")
-	rSprints.GET("/", SprintsGET)
-	rSprints.POST("/", TokenScopeChecker("basic"), SprintsPOST)
+	rSprints := rProjectsSlug.Group("/sprints/")
+	rSprints.GET("", SprintsGET)
+	rSprints.POST("", TokenScopeChecker("basic"), SprintsPOST)
 
 	// /users/:username/projects/:pslug/sprints/:sslug
 	rSprintsSlug := rSprints.Group("/:sslug")
 	rSprintsSlug.Use(SprintLoader)
-	rSprintsSlug.GET("/", SprintsSlugGET)
-	rSprintsSlug.PUT("/", TokenScopeChecker("basic"), SprintsSlugPUT)
-	rSprintsSlug.DELETE("/", TokenScopeChecker("basic"), SprintsSlugDELETE)
+	rSprintsSlug.GET("", SprintsSlugGET)
+	rSprintsSlug.PUT("", TokenScopeChecker("basic"), SprintsSlugPUT)
+	rSprintsSlug.DELETE("", TokenScopeChecker("basic"), SprintsSlugDELETE)
 	rSprintsSlug.POST("/next-sprint", TokenScopeChecker("basic"), SprintsSlugNextSprintPOST)
 	rSprintsSlug.POST("/open", TokenScopeChecker("basic"), SprintsSlugOpenPOST)
 	rSprintsSlug.GET("/guests", SprintsSlugGuestsGET)
